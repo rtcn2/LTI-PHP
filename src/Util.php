@@ -85,6 +85,7 @@ final class Util
         'lis_person_sourcedid' => array('suffix' => '', 'group' => 'lis', 'claim' => 'person_sourcedid'),
         'user_id' => array('suffix' => '', 'group' => null, 'claim' => 'sub'),
         'user_image' => array('suffix' => '', 'group' => null, 'claim' => 'picture'),
+        'user_username' => array('suffix' => '', 'group' => 'ext', 'claim' => 'user_username'),
         'roles' => array('suffix' => '', 'group' => '', 'claim' => 'roles', 'isArray' => true),
         'platform_id' => array('suffix' => '', 'group' => null, 'claim' => 'iss'),
         'deployment_id' => array('suffix' => '', 'group' => '', 'claim' => 'deployment_id'),

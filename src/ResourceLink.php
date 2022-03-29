@@ -952,6 +952,14 @@ EOF;
     }
 
     /**
+     * Get Tool Title.
+     */
+    public function getTitle()
+    {
+        return $this->title;
+    }
+    
+    /**
      * Check if the Tool Settings service is available.
      *
      * @return bool    True if this resource link supports the Tool Settings service

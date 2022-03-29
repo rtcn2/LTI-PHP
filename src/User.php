@@ -187,6 +187,14 @@ class User
     }
 
     /**
+     * Get the user's username
+     */
+    public function getUsername()
+    {
+        return $this->username;
+    }
+    
+    /**
      * Check if the user is an administrator (at any of the system, institution or context levels).
      *
      * @return bool    True if the user has a role of administrator
