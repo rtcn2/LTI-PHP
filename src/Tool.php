@@ -283,6 +283,13 @@ class Tool
     public static $defaultTool = null;
 
     /**
+     * Use GET method for authentication request messages when true
+     *
+     * @var bool $authenticateUsingGet
+     */
+    public static $authenticateUsingGet = false;
+
+    /**
      * URL to redirect user to on successful completion of the request.
      *
      * @var string|null $redirectUrl
@@ -1645,42 +1652,46 @@ EOD;
                             $title = "Resource {$this->resourceLink->getId()}";
                         }
                         $this->resourceLink->title = $title;
+                    }
 // Delete any existing custom parameters
-                        foreach ($this->platform->getSettings() as $name => $value) {
+                    foreach ($this->platform->getSettings() as $name => $value) {
+                        if ((strpos($name, 'custom_') === 0) && (!in_array($name, self::$LTI_RETAIN_SETTING_NAMES))) {
+                            $this->platform->setSetting($name);
+                            $doSavePlatform = true;
+                        }
+                    }
+                    if (!empty($this->context)) {
+                        foreach ($this->context->getSettings() as $name => $value) {
                             if ((strpos($name, 'custom_') === 0) && (!in_array($name, self::$LTI_RETAIN_SETTING_NAMES))) {
-                                $this->platform->setSetting($name);
-                                $doSavePlatform = true;
+                                $this->context->setSetting($name);
                             }
                         }
-                        if (!empty($this->context)) {
-                            foreach ($this->context->getSettings() as $name => $value) {
-                                if ((strpos($name, 'custom_') === 0) && (!in_array($name, self::$LTI_RETAIN_SETTING_NAMES))) {
-                                    $this->context->setSetting($name);
-                                }
-                            }
-                        }
+                    }
+                    if (!empty($this->resourceLink)) {
                         foreach ($this->resourceLink->getSettings() as $name => $value) {
                             if ((strpos($name, 'custom_') === 0) && (!in_array($name, self::$LTI_RETAIN_SETTING_NAMES))) {
                                 $this->resourceLink->setSetting($name);
                             }
                         }
+                    }
 // Save LTI parameters
-                        foreach (self::$LTI_CONSUMER_SETTING_NAMES as $name) {
+                    foreach (self::$LTI_CONSUMER_SETTING_NAMES as $name) {
+                        if (isset($this->messageParameters[$name])) {
+                            $this->platform->setSetting($name, $this->messageParameters[$name]);
+                        } else if (!in_array($name, self::$LTI_RETAIN_SETTING_NAMES)) {
+                            $this->platform->setSetting($name);
+                        }
+                    }
+                    if (!empty($this->context)) {
+                        foreach (self::$LTI_CONTEXT_SETTING_NAMES as $name) {
                             if (isset($this->messageParameters[$name])) {
-                                $this->platform->setSetting($name, $this->messageParameters[$name]);
+                                $this->context->setSetting($name, $this->messageParameters[$name]);
                             } else if (!in_array($name, self::$LTI_RETAIN_SETTING_NAMES)) {
-                                $this->platform->setSetting($name);
+                                $this->context->setSetting($name);
                             }
                         }
-                        if (!empty($this->context)) {
-                            foreach (self::$LTI_CONTEXT_SETTING_NAMES as $name) {
-                                if (isset($this->messageParameters[$name])) {
-                                    $this->context->setSetting($name, $this->messageParameters[$name]);
-                                } else if (!in_array($name, self::$LTI_RETAIN_SETTING_NAMES)) {
-                                    $this->context->setSetting($name);
-                                }
-                            }
-                        }
+                    }
+                    if (!empty($this->resourceLink)) {
                         foreach (self::$LTI_RESOURCE_LINK_SETTING_NAMES as $name) {
                             if (isset($this->messageParameters[$name])) {
                                 $this->resourceLink->setSetting($name, $this->messageParameters[$name]);
@@ -1688,15 +1699,17 @@ EOD;
                                 $this->resourceLink->setSetting($name);
                             }
                         }
+                    }
 // Save other custom parameters at all levels
-                        foreach ($this->messageParameters as $name => $value) {
-                            if ((strpos($name, 'custom_') === 0) && !in_array($name,
-                                    array_merge(self::$LTI_CONSUMER_SETTING_NAMES, self::$LTI_CONTEXT_SETTING_NAMES,
-                                        self::$LTI_RESOURCE_LINK_SETTING_NAMES))) {
-                                $this->platform->setSetting($name, $value);
-                                if (!empty($this->context)) {
-                                    $this->context->setSetting($name, $value);
-                                }
+                    foreach ($this->messageParameters as $name => $value) {
+                        if ((strpos($name, 'custom_') === 0) && !in_array($name,
+                                array_merge(self::$LTI_CONSUMER_SETTING_NAMES, self::$LTI_CONTEXT_SETTING_NAMES,
+                                    self::$LTI_RESOURCE_LINK_SETTING_NAMES))) {
+                            $this->platform->setSetting($name, $value);
+                            if (!empty($this->context)) {
+                                $this->context->setSetting($name, $value);
+                            }
+                            if (!empty($this->resourceLink)) {
                                 $this->resourceLink->setSetting($name, $value);
                             }
                         }
@@ -1999,7 +2012,11 @@ EOD;
                     $params['lti_message_hint'] = $parameters['lti_message_hint'];
                 }
                 $this->onInitiateLogin($parameters, $params);
-                $this->output = Util::sendForm($this->platform->authenticationUrl, $params);
+                if (!Tool::$authenticateUsingGet) {
+                    $this->output = Util::sendForm($this->platform->authenticationUrl, $params);
+                } else {
+                    Util::redirect($this->platform->authenticationUrl, $params);
+                }
             } else {
                 $this->reason = 'Unable to generate a state value.';
             }

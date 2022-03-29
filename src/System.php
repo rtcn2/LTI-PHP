@@ -444,9 +444,13 @@ trait System
                         $value = array_filter(explode(',', str_replace(' ', '', $value)), 'strlen');
                         sort($value);
                     } elseif (isset($mapping['isBoolean']) && $mapping['isBoolean']) {
-                        $value = $value === 'true';
+                        $value = (is_bool($value)) ? $value : $value === 'true';
                     } elseif (isset($mapping['isInteger']) && $mapping['isInteger']) {
                         $value = intval($value);
+                    } elseif (is_bool($value)) {
+                        $value = ($value) ? 'true' : 'false';
+                    } else {
+                        $value = strval($value);
                     }
                     $group = '';
                     $claim = Util::JWT_CLAIM_PREFIX;
@@ -1250,7 +1254,6 @@ trait System
             } else {
                 $authorizationId = '';
                 if ($this instanceof Tool) {
-                    $iss = $this->baseUrl;
                     $sub = '';
                     if (!empty($this->platform)) {
                         $sub = $this->platform->clientId;
@@ -1261,7 +1264,6 @@ trait System
                     $kid = $this->kid;
                     $jku = $this->jku;
                 } else {  // Tool-hosted services not yet defined in LTI
-                    $iss = $this->platformId;
                     $sub = $this->clientId;
                     $kid = $this->kid;
                     $jku = $this->jku;
@@ -1270,7 +1272,7 @@ trait System
                         $publicKey = Tool::$defaultTool->rsaKey;
                     }
                 }
-                $payload['iss'] = $iss;
+                $payload['iss'] = $sub;
                 $payload['sub'] = $sub;
                 if (empty($authorizationId)) {
                     $authorizationId = $endpoint;
