@@ -163,7 +163,16 @@ class User
     }
 
     /**
-     * Set the user's email address.
+      * Get ths user's username.
+ *
+ */
+public function getUsername()
+{
+    return $this->username;
+}
+
+/**
+ * Set the user's email address.
      *
      * @param string $email        Email address value
      * @param string $defaultEmail Value to use if no email is provided (optional, default is none)
