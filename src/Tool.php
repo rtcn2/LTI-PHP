@@ -105,7 +105,7 @@ class Tool
      */
     private static $CUSTOM_SUBSTITUTION_VARIABLES = array('User.id' => 'user_id',
         'User.image' => 'user_image',
-        'User.username' => 'username',
+        'User.username' => 'user_username',
         'User.scope.mentor' => 'role_scope_mentor',
         'Membership.role' => 'roles',
         'Person.sourcedId' => 'lis_person_sourcedid',

@@ -966,7 +966,16 @@ EOF;
     }
 
     /**
-     * Get Tool Settings.
+      * Get Tool Title.
+ *
+ */
+public function getTitle()
+{
+    return $this->title;
+}
+
+/**
+ * Get Tool Settings.
      *
      * @param int      $mode       Mode for request (optional, default is current level only)
      * @param bool     $simple     True if all the simple media type is to be used (optional, default is true)
